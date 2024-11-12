@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class AzureSpeechTranscriber:
-    def __init__(self, language_to_transcribe, output_folder="E:/thai_transcripts", max_retries=3, strings_to_remove_file="../txt_files/strings_to_remove.txt"):
+    def __init__(self, language_to_transcribe, output_folder="E:/thai_transcripts", max_retries=3, strings_to_remove_file="./txt_files/strings_to_remove.txt"):
         self.subscription_key = os.getenv('AZURE_SPEECH_API_KEY')
         self.region = os.getenv('AZURE_SPEECH_REGION')
         self.language_to_transcribe = language_to_transcribe
@@ -35,9 +35,9 @@ class AzureSpeechTranscriber:
     def create_transcript_filepath(self, wav_file_path):
         """ Creates a filepath for the transcript based on the WAV file path. """
         # Extract the portion of the file path after "temp_audio_files/"
-        relative_path = wav_file_path.split('temp_audio_files/', 1)[-1]
+        relative_path = wav_file_path.split('temp_wav_files/', 1)[-1]
         # Generate a new filename with .txt extension
-        cleaned_filename = relative_path.replace('/', '_').replace(':', '_').replace('\\', '_').replace('.wav', '.txt')
+        cleaned_filename = relative_path.replace('/', '_').replace(':', '_').replace('.', '_').replace('\\', '_').replace('.wav', '.txt')
         
         return os.path.join(self.output_folder, cleaned_filename).replace('\\', '/')
 
@@ -54,7 +54,7 @@ class AzureSpeechTranscriber:
         recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config)
 
         transcript_file_path = self.create_transcript_filepath(wav_file_path)
-        # print(f"Transcribing to: {transcript_file_path}")
+        print(f"Transcribing to: {transcript_file_path}")
 
         recognized_segments = 0
         eos_reached = False
