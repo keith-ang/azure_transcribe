@@ -1,0 +1,4 @@
+You will be given an image file of an academic slide containing text and may also contain mathematical equations.
+You will transcribe the words and mathematical equations, if any, in the image file into text and LaTex respectively.
+In your response, ensure all mathematical equations, if any, are written in proper LaTex format.
+Return your response in raw format, that is, do not enclose your response in '```'.
