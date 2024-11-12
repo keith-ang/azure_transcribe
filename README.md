@@ -66,14 +66,14 @@ python3 transcribe_image.py --base_dir ./input_images --output_image_dir ./outpu
 
 #### Command-Line Arguments
 - `--base_dir`: Base directory containing MP4 or WEBM files.
-- `--output_wav_dir`: Directory to save converted WAV files.
+- `--output_wav_dir`: Directory to save converted WAV files. (set as `../temp_wav_files`)
 - `--output_txt_dir`: Directory to save transcribed text.
 - `--logs_dir`: Directory to save logging.
-- `--language`: Language of the videos (e.g., `en-US` for English/`th-TH` for Thai).
+- `--language`: Language of the videos (e.g., `english` for English/`thai` for Thai).
 
 #### Example Command:
 ```sh
-python3 transcribe_video.py --base_dir ./input_videos --output_wav_dir ./output_wavs --output_txt_dir ./output_texts --logs_dir ./logs --language en-US
+python3.12 transcribe_video.py --base_dir ../published --output_wav_dir ../temp_wav_files --output_txt_dir ../talk_reach_ac_video_transcripts --logs_dir ./logs --language english
 ```
 
 ## Error Handling
