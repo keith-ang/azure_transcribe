@@ -8,6 +8,7 @@ import argparse
 import os
 import time
 import logging
+import shutil
 from dotenv import load_dotenv
 
 import threading
@@ -18,7 +19,9 @@ load_dotenv()
 
 MAX_CONVERT_WORKERS = 2  # Set an appropriate number based on your CPU capabilities
 MAX_TRANSCRIBE_WORKERS = os.cpu_count() * 3  # Adjust for I/O-bound nature of transcription tasks
-RETRY_DELAY = 60  # Delay in seconds before retrying transcription after rate limit error
+RETRY_DELAY = 60  # Delay in seconds before retrying API call after rate limit error
+CONVERT_RETRY_DELAY = 1000 # Delay in seconds before restarting conversion
+STORAGE_THRESHOLD = 100 # Storage threshold for conversion tasks
 
 job_counter = threading.Lock()
 job_id = 0
@@ -63,6 +66,13 @@ def generate_job_id():
 def convert_video_to_wav_task(mp4_path, video_preprocessor, transcription_queue, job_id, transcription_directory):
     global error_logger  # Ensure error_logger is accessible within this function
     try:
+        # Check available disk space
+        _, _, free = shutil.disk_usage(transcription_directory)
+        free_gb = free / (1024 ** 3)
+        if free_gb < STORAGE_THRESHOLD:
+            logging.warning(f"[JOB_ID_{job_id}]: Insufficient storage. Pausing conversion process as only {free_gb:.2f} GB is available.")
+            return "Insufficient storage"
+
         logging.info(f"[JOB_ID_{job_id}]: Starting conversion for {mp4_path}...")
         output_wav_path = video_preprocessor.convert_mp4_or_webm_to_wav(mp4_path, transcription_directory)
         if output_wav_path:  # Only add to the queue if conversion is successful
@@ -145,6 +155,10 @@ def conversion_worker(args):
             result = future.result()
             if result == "Skipped" or result.startswith("Failed:"):
                 logging.info(f"Conversion result: {result}")
+            elif result == "Insufficient storage":
+                logging.warning("[STORAGE CHECK] Pausing conversion due to insufficient storage, will retry after delay.")
+                time.sleep(CONVERT_RETRY_DELAY)  # Pause for a while before retrying
+                file_queue.put(mp4_path)  # Re-add the task to the queue for retry
             else:
                 logging.info(f"Successfully converted file to: {result}")
 
