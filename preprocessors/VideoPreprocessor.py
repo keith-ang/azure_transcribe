@@ -36,7 +36,13 @@ class VideoPreprocessor:
         if f"{cleaned_filename_without_extension}.txt" in os.listdir(transcript_directory):
             return None
         
+        if "deskshare" in input_path:
+            return None
+        
         wav_file_path = self.create_audio_filepath_duphonics(input_path)
+
+        if wav_file_path in self.temp_audio_path: 
+            return wav_file_path
 
         try:
             # Load the video file
