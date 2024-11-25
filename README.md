@@ -73,7 +73,7 @@ python3 transcribe_image.py --base_dir ./input_images --output_image_dir ./outpu
 
 #### Example Command:
 ```sh
-python3.12 transcribe_video.py --base_dir ../published --output_wav_dir ../temp_wav_files --output_txt_dir ../talk_reach_ac_video_transcripts --logs_dir ./logs --language english
+python3.12 transcribe_video.py --base_dir ../presentation --output_wav_dir ../temp_wav_files --output_txt_dir ../co_quest_ac_video_transcripts --logs_dir ../logs --language thai
 ```
 
 ## Error Handling

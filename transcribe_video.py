@@ -65,14 +65,7 @@ def generate_job_id():
 
 def convert_video_to_wav_task(mp4_path, video_preprocessor, transcription_queue, job_id, transcription_directory):
     global error_logger  # Ensure error_logger is accessible within this function
-    try:
-        # Check available disk space
-        _, _, free = shutil.disk_usage(transcription_directory)
-        free_gb = free / (1024 ** 3)
-        if free_gb < STORAGE_THRESHOLD:
-            logging.warning(f"[JOB_ID_{job_id}]: Insufficient storage. Pausing conversion process as only {free_gb:.2f} GB is available.")
-            return "Insufficient storage"
-
+    try: 
         logging.info(f"[JOB_ID_{job_id}]: Starting conversion for {mp4_path}...")
         output_wav_path = video_preprocessor.convert_mp4_or_webm_to_wav(mp4_path, transcription_directory)
         if output_wav_path:  # Only add to the queue if conversion is successful
@@ -82,10 +75,11 @@ def convert_video_to_wav_task(mp4_path, video_preprocessor, transcription_queue,
         else:
             logging.info(f"[JOB_ID_{job_id}]: [CONVERT SKIPPED] Skipped conversion for {mp4_path} as it already has a transcript")
             return "Skipped"
-    except Exception as e:
+    except Exception as e: 
         logging.error(f"[JOB_ID_{job_id}]: [CONVERT FAILED] Failed to convert {mp4_path}: {e}")
         error_logger.error(f"[JOB_ID_{job_id}]: [CONVERT FAILED] Failed to convert {mp4_path}: {e}")
         return f"Failed: {e}"
+    
 
 def transcribe_wav_task(transcription_queue, azure_speech_transcriber, memory_manager):
     global error_logger  # Ensure error_logger is accessible within this function
@@ -129,6 +123,18 @@ def file_generator(base_dir):
             if file.endswith('.mp4') or file.endswith('.webm'):
                 yield os.path.join(root, file)
 
+def check_storage_and_wait(transcription_directory):
+    """ Check available storage and wait if below threshold. """
+    global error_logger  # Ensure error_logger is accessible within this function
+    while True:
+        _, _, free = shutil.disk_usage(transcription_directory)
+        free_gb = free / (1024 ** 3)
+        if free_gb < STORAGE_THRESHOLD:
+            logging.warning(f"Insufficient storage. Pausing conversion process as only {free_gb:.2f} GB is available.")
+            time.sleep(CONVERT_RETRY_DELAY)
+        else:
+            break
+
 def conversion_worker(args):
     file_queue, output_wav_dir, transcription_directory, transcription_queue, logs_dir = args
     global error_logger
@@ -146,6 +152,9 @@ def conversion_worker(args):
                 logging.info("[CONVERSION END] Received termination signal in conversion worker, exiting.")
                 break
             
+            # Check storage before starting the next conversion task
+            check_storage_and_wait(transcription_directory)
+
             job_id = generate_job_id()
             future = executor.submit(convert_video_to_wav_task, mp4_path, video_preprocessor, transcription_queue, job_id, transcription_directory)
             futures.append(future)
