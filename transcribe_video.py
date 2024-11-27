@@ -20,8 +20,8 @@ load_dotenv()
 MAX_CONVERT_WORKERS = 2  # Set an appropriate number based on your CPU capabilities
 MAX_TRANSCRIBE_WORKERS = os.cpu_count() * 3  # Adjust for I/O-bound nature of transcription tasks
 RETRY_DELAY = 60  # Delay in seconds before retrying API call after rate limit error
-CONVERT_RETRY_DELAY = 1000 # Delay in seconds before restarting conversion
-STORAGE_THRESHOLD = 100 # Storage threshold for conversion tasks
+CONVERT_RETRY_DELAY = 1000  # Delay in seconds before restarting conversion
+STORAGE_THRESHOLD = 100  # Storage threshold in GB for conversion tasks
 
 job_counter = threading.Lock()
 job_id = 0
@@ -65,7 +65,17 @@ def generate_job_id():
 
 def convert_video_to_wav_task(mp4_path, video_preprocessor, transcription_queue, job_id, transcription_directory):
     global error_logger  # Ensure error_logger is accessible within this function
-    try: 
+    try:
+        # Check available disk space
+        while True:
+            _, _, free = shutil.disk_usage(transcription_directory)
+            free_gb = free / (1024 ** 3)
+            if free_gb < STORAGE_THRESHOLD:
+                logging.warning(f"[JOB_ID_{job_id}]: Insufficient storage. Pausing conversion process as only {free_gb:.2f} GB is available.")
+                time.sleep(CONVERT_RETRY_DELAY)
+            else:
+                break
+
         logging.info(f"[JOB_ID_{job_id}]: Starting conversion for {mp4_path}...")
         output_wav_path = video_preprocessor.convert_mp4_or_webm_to_wav(mp4_path, transcription_directory)
         if output_wav_path:  # Only add to the queue if conversion is successful
@@ -75,11 +85,10 @@ def convert_video_to_wav_task(mp4_path, video_preprocessor, transcription_queue,
         else:
             logging.info(f"[JOB_ID_{job_id}]: [CONVERT SKIPPED] Skipped conversion for {mp4_path} as it already has a transcript")
             return "Skipped"
-    except Exception as e: 
+    except Exception as e:
         logging.error(f"[JOB_ID_{job_id}]: [CONVERT FAILED] Failed to convert {mp4_path}: {e}")
         error_logger.error(f"[JOB_ID_{job_id}]: [CONVERT FAILED] Failed to convert {mp4_path}: {e}")
         return f"Failed: {e}"
-    
 
 def transcribe_wav_task(transcription_queue, azure_speech_transcriber, memory_manager):
     global error_logger  # Ensure error_logger is accessible within this function
@@ -123,18 +132,6 @@ def file_generator(base_dir):
             if file.endswith('.mp4') or file.endswith('.webm'):
                 yield os.path.join(root, file)
 
-def check_storage_and_wait(transcription_directory):
-    """ Check available storage and wait if below threshold. """
-    global error_logger  # Ensure error_logger is accessible within this function
-    while True:
-        _, _, free = shutil.disk_usage(transcription_directory)
-        free_gb = free / (1024 ** 3)
-        if free_gb < STORAGE_THRESHOLD:
-            logging.warning(f"Insufficient storage. Pausing conversion process as only {free_gb:.2f} GB is available.")
-            time.sleep(CONVERT_RETRY_DELAY)
-        else:
-            break
-
 def conversion_worker(args):
     file_queue, output_wav_dir, transcription_directory, transcription_queue, logs_dir = args
     global error_logger
@@ -151,9 +148,6 @@ def conversion_worker(args):
             if mp4_path is None:
                 logging.info("[CONVERSION END] Received termination signal in conversion worker, exiting.")
                 break
-            
-            # Check storage before starting the next conversion task
-            check_storage_and_wait(transcription_directory)
 
             job_id = generate_job_id()
             future = executor.submit(convert_video_to_wav_task, mp4_path, video_preprocessor, transcription_queue, job_id, transcription_directory)
@@ -164,10 +158,6 @@ def conversion_worker(args):
             result = future.result()
             if result == "Skipped" or result.startswith("Failed:"):
                 logging.info(f"Conversion result: {result}")
-            elif result == "Insufficient storage":
-                logging.warning("[STORAGE CHECK] Pausing conversion due to insufficient storage, will retry after delay.")
-                time.sleep(CONVERT_RETRY_DELAY)  # Pause for a while before retrying
-                file_queue.put(mp4_path)  # Re-add the task to the queue for retry
             else:
                 logging.info(f"Successfully converted file to: {result}")
 
