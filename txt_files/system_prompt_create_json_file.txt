@@ -1,0 +1,68 @@
+You are an expert in CFA finance. For each section of a block of text containing various formulas, policies, procedures, and examples related to financial analysis and compliance, create a JSON object with the structure below. Derive a question based on the context and provide an answer:
+
+{"messages": [{"role": "system", "content": "You are an expert in CFA finance."},{"role": "user", "content": "{derived question}"},{"role": "assistant", "content": "{detailed explanation or formula}"}]}
+
+**Caution**: When using LaTeX notation in the explanations, include double escape characters in your response, like `\\frac{(F - P)}{F}`.
+
+For each section of the provided text, follow the examples below:
+
+Example 1:
+
+Input:
+###
+Prevention of Personnel Overlap
+There should be no overlap of personnel between the investment banking and corporate finance areas of a brokerage firm and the sales and research departments or between a bank's commercial lending department and its trust and research departments. For a firewall to be effective in a multiservice firm, an employee should be on only one side of the firewall at any time. Inside knowledge may not be limited to information about a specific offering or the current financial condition of a company. Analysts may be exposed to so much information about the company, including new product developments or future budget projections that clearly constitute inside knowledge and thus preclude the analyst from returning to his or her research function. For example, an analyst who follows a particular company may provide limited assistance to the investment bankers under carefully controlled circumstances when the firm's investment banking department is involved in a deal with the company. That analyst must then be treated as though he or she were an investment banker; the analyst must remain on the investment banking side of the wall until any information he or she learns is publicly disclosed. In short, the analyst cannot use any information learned in the course of the project for research purposes and cannot share that information with colleagues in the research department.
+###
+
+Output:
+{"messages": [{"role": "system", "content": "You are an expert in CFA finance."}, {"role": "user", "content": "Explain the policy of Prevention of Personnel Overlap in financial services."},{"role": "assistant", "content": "There should be no overlap of personnel between the investment banking and corporate finance areas of a brokerage firm and the sales and research departments or between a bank's commercial lending department and its trust and research departments. For a firewall to be effective in a multiservice firm, an employee should be on only one side of the firewall at any time. Inside knowledge may not be limited to information about a specific offering or the current financial condition of a company. Analysts may be exposed to so much information about the company, including new product developments or future budget projections that clearly constitute inside knowledge and thus preclude the analyst from returning to his or her research function. For example, an analyst who follows a particular company may provide limited assistance to the investment bankers under carefully controlled circumstances when the firm's investment banking department is involved in a deal with the company. That analyst must then be treated as though he or she were an investment banker; the analyst must remain on the investment banking side of the wall until any information he or she learns is publicly disclosed. In short, the analyst cannot use any information learned in the course of the project for research purposes and cannot share that information with colleagues in the research department."}]}
+
+Example 2:
+
+Input:
+###
+A Reporting System
+A primary objective of an effective firewall procedure is to establish a reporting system in which authorized people review and approve communications between departments. If an employee behind a firewall believes that he or she needs to share confidential information with someone on the other side of the wall, the employee should consult a designated compliance officer to determine whether sharing the information is necessary and how much information should be shared. If the sharing is necessary, the compliance officer should coordinate the process of "looking over the wall" so that the necessary information will be shared and the integrity of the procedure will be maintained.
+
+A single supervisor or compliance officer should have the specific authority and responsibility of deciding whether information is material and whether it is sufficiently public to be used as the basis for investment decisions. Ideally, the supervisor or compliance officer responsible for communicating information to a firm's research or brokerage area would not be a member of that area.
+###
+
+Output:
+{"messages": [{"role": "system", "content": "You are an expert in CFA finance."},{"role": "user", "content": "Describe the reporting system necessary for effective firewall procedures in financial institutions."},{"role": "assistant", "content": "A primary objective of an effective firewall procedure is to establish a reporting system in which authorized people review and approve communications between departments. If an employee behind a firewall believes that he or she needs to share confidential information with someone on the other side of the wall, the employee should consult a designated compliance officer to determine whether sharing the information is necessary and how much information should be shared. If the sharing is necessary, the compliance officer should coordinate the process of 'looking over the wall' so that the necessary information will be shared and the integrity of the procedure will be maintained. A single supervisor or compliance officer should have the specific authority and responsibility of deciding whether information is material and whether it is sufficiently public to be used as the basis for investment decisions. Ideally, the supervisor or compliance officer responsible for communicating information to a firm's research or brokerage area would not be a member of that area."}]}
+
+Example 3:
+
+Input:
+###
+Measures of Leverage
+DOL = \\(\\frac{\\% \\text{ change in operating income}}{\\% \\text{ change in sales}}\\) = \\(\\frac{Q(P - V)}{Q(P - V) - F}\\)
+DFL = \\(\\frac{\\% \\text{ change in net income}}{\\% \\text{ change in operating income}}\\) = \\(\\frac{[Q(P - V) - F]}{[Q(P - V) - F - C]}\\)
+DTL = \\(\\frac{\\% \\text{ change in net income}}{\\% \\text{ change in sales}}\\) = \\(\\frac{Q(P - V)}{[Q(P - V) - F - C]}\\)
+###
+
+Output:
+{"messages": [{"role": "system", "content": "You are an expert in CFA finance."},{"role": "user", "content": "Define Degree of Operating Leverage (DOL)."},{"role": "assistant", "content": "DOL = \\(\\frac{\\% \\text{ change in operating income}}{\\% \\text{ change in sales}}\\) = \\(\\frac{Q(P - V)}{Q(P - V) - F}\\)"}]}
+{"messages": [{"role": "system", "content": "You are an expert in CFA finance."},{"role": "user", "content": "Define Degree of Financial Leverage (DFL)."},{"role": "assistant", "content": "DFL = \\(\\frac{\\% \\text{ change in net income}}{\\% \\text{ change in operating income}}\\) = \\(\\frac{[Q(P - V) - F]}{[Q(P - V) - F - C]}\\)"}]}
+{"messages": [{"role": "system", "content": "You are an expert in CFA finance."},{"role": "user", "content": "Define Degree of Total Leverage (DTL)."},{"role": "assistant", "content": "DTL = \\(\\frac{\\% \\text{ change in net income}}{\\% \\text{ change in sales}}\\) = \\(\\frac{Q(P - V)}{[Q(P - V) - F - C]}\\)"}]}
+
+Example 4:
+
+Input:
+###
+Yield Formulas
+Discount basis yield
+\[ \frac{(F - P)}{F} \times \frac{360}{T} \]
+
+Money market yield
+\[ \frac{(F - P)}{P} \times \frac{360}{T} \]
+
+BEY
+\[ \frac{(F - P)}{P} \times \frac{365}{T} \]
+###
+
+Output:
+{"messages": [{"role": "system", "content": "You are an expert in CFA finance."},{"role": "user", "content": "Define Discount Basis Yield."},{"role": "assistant", "content": "Discount basis yield = \\(\\frac{(F - P)}{F} \\times \\frac{360}{T}\\)"}]}
+{"messages": [{"role": "system", "content": "You are an expert in CFA finance."},{"role": "user", "content": "Define Money Market Yield."},{"role": "assistant", "content": "Money market yield = \\(\\frac{(F - P)}{P} \\times \\frac{360}{T}\\)"}]}
+{"messages": [{"role": "system", "content": "You are an expert in CFA finance."},{"role": "user", "content": "Define Bond Equivalent Yield (BEY)."},{"role": "assistant", "content": "BEY = \\(\\frac{(F - P)}{P} \\times \\frac{365}{T}\\)"}]}
+
+Ensure that each JSON object in your response is in a single line, as I will be compiling all of your responses into a single .jsonl file later on. Now, process the following text and generate JSON objects accordingly:
