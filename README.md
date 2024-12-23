@@ -9,6 +9,7 @@ This repository contains two scripts designed to automate the process of transcr
 - [Usage](#usage)
   - [Image Transcription](#image-transcription)
   - [Video Transcription](#video-transcription)
+  - [Training Data Creation](#training-data-creation)
 - [Error Handling](#error-handling)
 - [Logging](#logging)
 - [Contributors](#contributors)
@@ -16,17 +17,23 @@ This repository contains two scripts designed to automate the process of transcr
 ## Overview
 - **transcribe_image.py**: This script copies PNG images from a source directory to a target directory and uses Azure OCR to transcribe the text in these images.
 - **transcribe_video.py**: This script converts videos (MP4/WEBM) into audio files (WAV) and uses Azure's Speech-to-Text service to transcribe the audio.
+- **create_training_data.py**: This script processes text files, sends them to Azure's chat API to generate questions and answers based on the given context, and saves the output in JSONL format.
 
-Both scripts handle tasks using multiprocessing and multithreading to improve performance and manage resource usage effectively.
+All scripts handle tasks using multiprocessing and multithreading to improve performance and manage resource usage effectively.
 
 ## Requirements
 - Python 3.8+
-- Azure Services (Computer Vision for OCR, Speech Service for audio transcription)
+- Azure Services:
+  - Speech Service for audio transcription
+  - Azure OpenAI for text transcription
 - `dotenv` for environment variables
 - `argparse` for command-line argument parsing
 - `logging` for logging
 - `concurrent.futures` for threading
 - `multiprocessing` for parallel processing
+- `openai` for OpenAI
+- `moviepy` for video file processing (for transcribe_video.py)
+- `langchain` for text management (for create_training_data.py)
 
 ## Setup
 1. **Install Required Packages:**
@@ -69,11 +76,24 @@ python3 transcribe_image.py --base_dir ./input_images --output_image_dir ./outpu
 - `--output_wav_dir`: Directory to save converted WAV files. (set as `../temp_wav_files`)
 - `--output_txt_dir`: Directory to save transcribed text.
 - `--logs_dir`: Directory to save logging.
-- `--language`: Language of the videos (e.g., `english` for English/`thai` for Thai).
+- `--language`: Language of the videos e.g., `english` for English,`thai` for Thai. (Add more languages into `utils/languages` as required)
 
 #### Example Command:
 ```sh
-python3.12 transcribe_video.py --base_dir ../presentation --output_wav_dir ../temp_wav_files --output_txt_dir ../co_quest_ac_video_transcripts --logs_dir ../logs --language thai
+python3 transcribe_video.py --base_dir ../presentation --output_wav_dir ../temp_wav_files --output_txt_dir ../co_quest_ac_video_transcripts --logs_dir ../logs --language thai
+```
+
+### Training Data Creation
+
+#### Command Line Arguments
+Modify the script constants directly or adapt the script to accept command-line parameters:
+- `INPUT_DIR`: Directory containing input text files.
+- `OUTPUT_TXT_DIR`: Directory to save transcribed text.
+- `MAX_WORKERS`: Maximum number of worker threads (default is number of CPU cores).
+
+#### Example Command
+```sh
+python3 create_training_data.py
 ```
 
 ## Error Handling
