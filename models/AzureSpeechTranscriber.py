@@ -8,6 +8,14 @@ load_dotenv()
 
 class AzureSpeechTranscriber:
     def __init__(self, language_to_transcribe, output_folder="E:/thai_transcripts", max_retries=3, strings_to_remove_file="./txt_files/strings_to_remove.txt"):
+        """
+        Initializes the AzureSpeechTranscriber with the necessary configurations.
+
+        :param language_to_transcribe: The language to transcribe.
+        :param output_folder: The folder where the transcriptions will be saved.
+        :param max_retries: The maximum number of retries for the transcription process.
+        :param strings_to_remove_file: File containing a list of strings to be removed from the transcriptions.
+        """
         self.subscription_key = os.getenv('AZURE_SPEECH_API_KEY')
         self.region = os.getenv('AZURE_SPEECH_REGION')
         self.language_to_transcribe = language_to_transcribe
@@ -22,7 +30,12 @@ class AzureSpeechTranscriber:
         self.strings_to_remove = self.read_strings_to_remove(strings_to_remove_file)
 
     def read_strings_to_remove(self, strings_to_remove_file):
-        """ Reads strings to remove from a file, each line in the file should contain one string. """
+        """
+        Reads strings to remove from a file, where each line in the file contains one string.
+
+        :param strings_to_remove_file: The file containing strings to be removed.
+        :return: A list of strings to be removed.
+        """
         if not os.path.isfile(strings_to_remove_file):
             print(f"Warning: {strings_to_remove_file} does not exist. No strings will be removed.")
             return []
@@ -33,7 +46,12 @@ class AzureSpeechTranscriber:
         return strings
 
     def create_transcript_filepath(self, wav_file_path):
-        """ Creates a filepath for the transcript based on the WAV file path. """
+        """
+        Creates a file path for the transcript based on the WAV file path.
+
+        :param wav_file_path: The path to the WAV file.
+        :return: The output file path for the transcript.
+        """
         # Extract the portion of the file path after "temp_audio_files/"
         relative_path = wav_file_path.split('temp_wav_files/', 1)[-1]
         # Generate a new filename with .txt extension
@@ -42,12 +60,23 @@ class AzureSpeechTranscriber:
         return os.path.join(self.output_folder, cleaned_filename).replace('\\', '/')
 
     def remove_strings(self, text):
-        """ Removes pre-specified strings from the text. """
+        """
+        Removes pre-specified strings from the text.
+
+        :param text: The text from which to remove strings.
+        :return: The text with the specified strings removed.
+        """
         for string in self.strings_to_remove:
             text = text.replace(string, '')
         return text
 
     def transcribe(self, wav_file_path):
+        """
+        Transcribes the content of a WAV file into text using Azure's speech service.
+
+        :param wav_file_path: The path to the WAV file to be transcribed.
+        :return: The path to the file where the transcription is saved.
+        """
         speech_config = speechsdk.SpeechConfig(subscription=self.subscription_key, region=self.region)
         speech_config.speech_recognition_language = self.language_to_transcribe
         audio_config = speechsdk.audio.AudioConfig(filename=wav_file_path)
@@ -60,6 +89,11 @@ class AzureSpeechTranscriber:
         eos_reached = False
 
         def recognized(evt):
+            """
+            Callback function for handling recognized speech segments.
+            
+            :param evt: Event containing the recognized speech result.
+            """
             nonlocal recognized_segments
             if evt.result.reason == speechsdk.ResultReason.RecognizedSpeech:
                 text = evt.result.text
@@ -72,6 +106,11 @@ class AzureSpeechTranscriber:
             #     print("No speech could be recognized")
 
         def canceled(evt):
+            """
+            Callback function for handling recognition cancellation events.
+            
+            :param evt: Event containing the cancellation details.
+            """
             nonlocal eos_reached
             # print(f"Recognition canceled: {evt.cancellation_details}")
             if evt.cancellation_details.reason == speechsdk.CancellationReason.EndOfStream:
@@ -106,7 +145,11 @@ class AzureSpeechTranscriber:
         return transcript_file_path
 
     def clean_transcript_file(self, transcript_file_path):
-        """ Reads the transcript file, removes specified strings, and writes the cleaned content back to the file. """
+        """
+        Reads the transcript file, removes specified strings, and writes the cleaned content back to the file.
+
+        :param transcript_file_path: The path to the transcript file to be cleaned.
+        """
         try:
             with open(transcript_file_path, 'r', encoding='utf-8') as file:
                 content = file.read()

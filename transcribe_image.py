@@ -1,7 +1,3 @@
-from preprocessors.PNGCollater import PNGCollater
-from models.AzureImageTranscriber import AzureImageTranscriber
-from memory.MemoryManagement import MemoryManager
-
 from datetime import datetime
 import logging
 import os
@@ -12,6 +8,10 @@ from dotenv import load_dotenv
 import threading
 import multiprocessing
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+from preprocessors.PNGCollater import PNGCollater
+from models.AzureImageTranscriber import AzureImageTranscriber
+from memory.MemoryManagement import MemoryManager
 
 load_dotenv()
 
@@ -27,6 +27,12 @@ class CustomFilter(logging.Filter):
         return "rate limit" not in record.getMessage()
 
 def setup_logging(log_directory):
+    """
+    Sets up logging configuration.
+
+    :param log_directory: Directory where log files will be saved.
+    :return: A logger instance for error logging.
+    """
     current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_file_path = os.path.join(log_directory, f"transcribe_image_{current_time}.log")
     error_log_file_path = os.path.join(log_directory, f"transcribe_image_errors_{current_time}.log")
@@ -52,13 +58,28 @@ def setup_logging(log_directory):
     return error_logger
 
 def generate_job_id():
+    """
+    Generates a unique job ID in a thread-safe manner.
+
+    :return: A unique job ID.
+    """
     global job_id
     with job_counter:
         job_id += 1
         return job_id
 
 def copy_png_image_task(png_path, collater, transcription_queue, job_id, transcript_directory):
-    global error_logger  # Ensure error_logger is accessible within this function
+    """
+    Task to copy PNG images to the output directory.
+
+    :param png_path: Path to the PNG file.
+    :param collater: Instance of PNGCollater.
+    :param transcription_queue: Queue to add tasks for transcription.
+    :param job_id: Unique job ID.
+    :param transcript_directory: Directory containing transcript files.
+    :return: Path to the copied image or a status message.
+    """
+    global error_logger
     try:
         output_image_path = collater.copy_png_image(png_path, transcript_directory)
         if output_image_path:  # Only add to the queue if the image was copied
@@ -74,6 +95,13 @@ def copy_png_image_task(png_path, collater, transcription_queue, job_id, transcr
         return f"Failed: {e}"
 
 def transcribe_image_task(transcription_queue, azure_image_transcriber, memory_manager):
+    """
+    Task to transcribe images using Azure.
+
+    :param transcription_queue: Queue to retrieve tasks for transcription.
+    :param azure_image_transcriber: Instance of AzureImageTranscriber.
+    :param memory_manager: Instance of MemoryManager.
+    """
     global error_logger
     while True:
         job = transcription_queue.get()
@@ -98,6 +126,11 @@ def transcribe_image_task(transcription_queue, azure_image_transcriber, memory_m
                 error_logger.error(f"[JOB_ID_{job_id}]: [TRANSCRIBE FAILED] Error during transcription : {e}")
 
 def parse_args():
+    """
+    Parses command line arguments.
+
+    :return: Parsed command line arguments.
+    """
     parser = argparse.ArgumentParser(description="Process PNG files and transcribe images using Azure.")
     parser.add_argument('--base_dir', help='Base directory containing PNG files', required=True)
     parser.add_argument('--output_image_dir', help='Directory to save copied PNG images', required=True)
@@ -106,13 +139,23 @@ def parse_args():
     return parser.parse_args()
 
 def file_generator(base_dir):
-    """Lazy generator to yield PNG files."""
+    """
+    Generator to yield PNG files from the base directory.
+
+    :param base_dir: Base directory containing PNG files.
+    :yield: Paths to PNG files.
+    """
     for root, _, files in os.walk(base_dir):
         for file in files:
             if file.endswith('.png'):
                 yield os.path.join(root, file)
 
 def conversion_worker(args):
+    """
+    Worker function to handle conversion tasks.
+
+    :param args: Arguments for the conversion worker.
+    """
     file_queue, output_image_dir, output_txt_dir, transcription_queue, logs_dir = args
     global error_logger
     error_logger = setup_logging(logs_dir)
@@ -145,6 +188,11 @@ def conversion_worker(args):
     transcription_queue.put(None)  # Signal to terminate transcription workers
 
 def transcription_worker(args):
+    """
+    Worker function to handle transcription tasks.
+
+    :param args: Arguments for the transcription worker.
+    """
     transcription_queue, output_txt_dir, logs_dir = args
     global error_logger
     error_logger = setup_logging(logs_dir)
@@ -165,6 +213,9 @@ def transcription_worker(args):
     logging.info("[TRANSCRIPTION COMPLETE] All transcription tasks are complete.")
 
 def main():
+    """
+    Main function to parse arguments, initialize logging, and start the conversion and transcription workers.
+    """
     args = parse_args()
 
     base_dir = args.base_dir

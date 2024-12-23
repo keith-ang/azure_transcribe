@@ -8,6 +8,12 @@ load_dotenv()
 
 class AzureImageTranscriber:
     def __init__(self, output_txt_dir, transcribe_content_type: str = "default"):
+        """
+        Initializes the AzureImageTranscriber with necessary configurations and system prompt.
+
+        :param output_txt_dir: The directory where the transcribed output text files will be saved.
+        :param transcribe_content_type: The type of content to be transcribed, default is 'default'.
+        """
         self.output_txt_dir = output_txt_dir
         self.max_tokens = os.getenv("MAX_TOKENS")
         self.model = os.getenv("DEPLOYMENT_NAME")
@@ -26,10 +32,23 @@ class AzureImageTranscriber:
 
     @staticmethod
     def read_system_prompt(file_path: str) -> str:
+        """
+        Reads and returns the system prompt from the specified file path.
+
+        :param file_path: Path to the system prompt text file.
+        :return: Content of the system prompt file as a string.
+        """
         with open(file_path, "r", encoding="utf-8") as file:
             return file.read().strip()
         
     def transcribe_image(self, image_file_path: str, job_id):
+        """
+        Transcribes the content of an image file into text using Azure's OpenAI service.
+
+        :param image_file_path: The path to the image file to be transcribed.
+        :param job_id: An identifier for the job, useful for logging and debugging purposes.
+        :return: The transcribed text content.
+        """
         # Convert image to base64
         with open(image_file_path, "rb") as image_file:
             image_base64_string = base64.b64encode(image_file.read()).decode('utf-8')
@@ -72,4 +91,3 @@ class AzureImageTranscriber:
         except Exception as e:
             logging.error(f"Job {job_id}: Failed to make the request. Error: {e}")
             raise
-        
