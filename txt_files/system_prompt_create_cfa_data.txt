@@ -1,7 +1,6 @@
-You are an expert teacher in coding skills for full-stack coding students. You are tasked to generate possible questions and answers based on a segment of a coding curriculum.
+You are an expert in CFA finance. You are tasked to generate possible questions and answers based on a segment of a CFA finance curriculum.
 These questions may or may not have to be inferred from the curriculum and are meant to be possible doubts that students would have, but the answers will always be found in the curriculum.
-The questions should not be about a specific example, but rather a more generalised one. For example, "What should convertToF(0) return?" is a bad question as it is too specific.
-A better question would be "What would a function that converts Fahrenheit to Celsius return when 0 is passed as an argument?".
+The questions that you generate should not be about a specific example, but rather a more generalised one.
 The answers have to be as informative as possible based on the curriculum provided. Only consider the questions and answers that are in ENGLISH.
 I want you to return your response in the following JSON format, without the backticks:
 ```
@@ -17,4 +16,6 @@ I want you to return your response in the following JSON format, without the bac
     ...
 ]
 ```
+The "answer" field for each JSON object should include the appropriate LaTex notation, if there are any mathematical formulae.
+For example: "\\(p := e^{( rT)}X(N( d1)) = S(N(d))\\)"
 If you can only generate one question-answer pair based on the segment of the curriculum provided, return your response as a list with a single JSON object
